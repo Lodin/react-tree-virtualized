@@ -1,0 +1,93 @@
+{
+  "name": "react-tree-virtualized",
+  "version": "0.1.0",
+  "description": "React Tree component based on react-virtualized",
+  "main": "cjs/index.js",
+  "module": "es/index.js",
+  "jsnext:main": "es/index.js",
+  "typings": "es/index.d.ts",
+  "scripts": {
+    "clean": "rimraf dist coverage",
+    "check-es3": "check-es3-syntax dist/umd/ --patch && apply-patch poetez-ts-lib-boilerplatre.js.patch && rimraf poetez-ts-lib-boilerplatre.js.patch",
+    "lint": "run-p lint:*",
+    "lint:config": "eslint \"config/**/*.js\"",
+    "lint:src": "tslint \"src/**/*.+(ts|tsx)\" --type-check -c tslint.json -p tsconfig.tslint.json -t verbose",
+    "lint:spec": "tslint \"spec/**/*.+(ts|tsx)\" --type-check -c tslint.json -p tsconfig.tslint.json -t verbose",
+    "test": "nodemon --watch src --watch spec -e ts --exec \"run-s test:single\"",
+    "test:single": "jasmine --config=jasmine.json",
+    "test:cover": "nyc run-s test:single",
+    "build:cjs": "run-p build:cjs:files build:cjs:copydts",
+    "build:cjs:files": "tsc --outDir dist/cjs --target es5 -m commonjs --mapRoot ../cjs --declaration",
+    "build:cjs:copydts": "cd src && copyfiles **/*.d.ts ../dist/cjs",
+    "build:es": "run-p build:es:files build:es:copydts",
+    "build:es:files": "tsc --outDir dist/es --mapRoot ../es --declaration",
+    "build:es:copydts": "cd src && copyfiles **/*.d.ts ../dist/es",
+    "build:umd": "run-p build:umd:regular build:umd:min",
+    "build:umd:regular": "cross-env NODE_ENV=development webpack --config=config/webpack.dev.js",
+    "build:umd:min": "cross-env NODE_ENV=production webpack --config=config/webpack.prod.js",
+    "build": "run-p build:cjs build:umd",
+    "_prepublish": "run-s clean lint test:single build",
+    "precommit": "lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/poetez/poetez-ts-lib-boilerplate.git"
+  },
+  "keywords": [
+    "boilerplate",
+    "typescript",
+    "library"
+  ],
+  "author": "Vlad Rindevich <rindevich.vs@gmail.com> (https://github.com/Lodin)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/poetez/poetez-ts-lib-boilerplate/issues"
+  },
+  "homepage": "https://github.com/poetez/poetez-ts-lib-boilerplate#readme",
+  "devDependencies": {
+    "@types/enzyme": "^2.8.9",
+    "@types/jasmine": "^2.6.0",
+    "@types/node": "^8.0.31",
+    "@types/prop-types": "^15.5.2",
+    "@types/react": "^16.0.7",
+    "@types/react-dom": "^15.5.5",
+    "@types/react-virtualized": "^9.7.4",
+    "apply-patch": "^0.1.2",
+    "awesome-typescript-loader": "^3.2.3",
+    "check-es3-syntax-cli": "^0.2.1",
+    "codecov": "^2.3.0",
+    "copyfiles": "^1.2.0",
+    "cross-env": "^5.0.5",
+    "enzyme": "^3.0.0",
+    "eslint": "^4.8.0",
+    "eslint-config-airbnb-base": "^12.0.1",
+    "eslint-plugin-import": "^2.7.0",
+    "husky": "^0.14.3",
+    "jasmine": "^2.8.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "jsdom": "^11.2.0",
+    "jsdom-global": "^3.0.2",
+    "lint-staged": "^4.2.3",
+    "nodemon": "^1.12.1",
+    "npm-run-all": "^4.1.1",
+    "nyc": "^11.2.1",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-test-renderer": "^16.0.0",
+    "rimraf": "^2.6.2",
+    "ts-loader": "^2.3.7",
+    "ts-node": "^3.3.0",
+    "tslint": "^5.7.0",
+    "tslint-config-poetez": "0.2.2",
+    "typescript": "^2.5.3",
+    "webpack": "^3.6.0"
+  },
+  "dependencies": {
+    "react-virtualized": "^9.10.1",
+    "tslib": "^1.7.1"
+  },
+  "peerDependencies": {
+    "react": "^15.0.0-0 || ^16.0.0-0",
+    "react-dom": "^15.0.0-0 || ^16.0.0-0"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "src/**/*.ts": ["run-s lint:src -- --fix", "git add"],
+  "spec/**/*.ts": ["run-s lint:spec -- --fix", "git add"],
+  "config/**/*.js": ["eslint --fix", "git add"]
+}
