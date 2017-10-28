@@ -1,9 +1,14 @@
 import * as cn from 'classnames';
-import * as mem from 'mem';
+import * as memImpl from 'mem';
 import * as React from 'react';
 import {Alignment, Grid, GridCellProps} from 'react-virtualized';
 import {GridCoreProps} from 'react-virtualized/dist/es/Grid';
-import {CellPosition, NodeGetter, NodeRenderer, PreviousNodeInfo, RenderedSection} from './types';
+import defaultNodeRenderer from './defaultNodeRenderer';
+import {
+  CellPosition,
+  Node, NodeGetter, NodeRegistry, NodeRenderer,
+  RenderedSection,
+} from './types';
 
 export interface RowsRenderInfo {
   overscanStartIndex: number;
@@ -14,21 +19,25 @@ export interface RowsRenderInfo {
 
 export interface TreeProps extends GridCoreProps {
   nodeGetter: NodeGetter;
-  nodeRenderer: NodeRenderer;
+  nodeRenderer?: NodeRenderer;
 
   onRowsRendered?(info: RowsRenderInfo): void;
 }
 
-export default class Tree extends React.PureComponent<TreeProps> {
-  private grid: Grid | null;
-  private ids = new Map<string, boolean>();
-  private previousNode?: PreviousNodeInfo;
+function mem(_t: any, _k: string, descriptor: TypedPropertyDescriptor<any>): void {
+  descriptor.value = memImpl(descriptor.value);
+}
 
-  private onNodeToggleFactory = mem((id: string) => () => {
-    const current = this.ids.get(id) || false;
-    this.ids.set(id, !current);
-    this.forceUpdate();
-  });
+export default class Tree extends React.PureComponent<TreeProps> {
+  public static defaultProps = {
+    nodeRenderer: defaultNodeRenderer,
+  };
+
+  private grid: Grid | null;
+  private registry: NodeRegistry = {
+    list: [],
+    map: {},
+  };
 
   public forceUpdateGrid(): void {
     if (this.grid) {
@@ -114,7 +123,8 @@ export default class Tree extends React.PureComponent<TreeProps> {
     } = this.props;
 
     const classNames = cn('ReactVirtualized__Tree', className);
-    this.previousNode = undefined;
+
+    const rowCount = this.prepareRegistry();
 
     return (
       <Grid
@@ -127,6 +137,7 @@ export default class Tree extends React.PureComponent<TreeProps> {
         noContentRenderer={noRowsRenderer}
         onSectionRendered={this.onSectionRendered}
         ref={this.setRef}
+        rowCount={rowCount}
         scrollToRow={scrollToIndex}
       />
     );
@@ -140,15 +151,15 @@ export default class Tree extends React.PureComponent<TreeProps> {
   }: GridCellProps) => {
     const {
       nodeClassName,
-      nodeGetter,
       nodeRenderer,
-      nodeStyle,
       onNodeClick,
       onNodeDoubleClick,
       onNodeMouseOver,
       onNodeMouseOut,
       onNodeRightClick,
     } = this.props;
+
+    const {list, map} = this.registry;
 
     // TRICKY The style object is sometimes cached by Grid.
     // This prevents new style objects from bypassing shallowCompare().
@@ -163,50 +174,45 @@ export default class Tree extends React.PureComponent<TreeProps> {
       style.width = '100%';
     }
 
-    const {
-      id,
-      data,
-      nestingLevel,
-      isLeaf,
-    } = nodeGetter({
-      index: rowIndex,
-      previousNode: this.previousNode,
-    });
-
-    const isOpened = this.ids.get(id) || false;
-
-    this.previousNode = {
-      id,
-      isOpened,
-    };
+    const id = list[rowIndex];
+    const {data, deepLevel, isLeaf, isOpened} = map[id];
 
     const onNodeToggle = this.onNodeToggleFactory(id);
 
-    return nodeRenderer({
+    return nodeRenderer!({
       className: nodeClassName,
+      deepLevel,
       index: rowIndex,
+      isLeaf,
       isOpened,
       isScrolling,
       key,
       nodeData: data,
-      nodeMeta: {
-        id,
-        isLeaf,
-        nestingLevel,
-      },
       onNodeClick,
       onNodeDoubleClick,
       onNodeMouseOut,
       onNodeMouseOver,
       onNodeRightClick,
       onNodeToggle,
-      style: nodeStyle,
+      style,
     });
   };
 
   private setRef: React.Ref<Grid> = (grid) => {
     this.grid = grid;
   };
+
+  @mem
+  private onNodeToggleFactory(id: string): () => void {
+    return () => {
+      const {map} = this.registry;
+
+      const nodeInfo = map[id];
+      nodeInfo.isOpened = !nodeInfo.isOpened;
+
+      this.forceUpdate();
+    }
+  }
 
   private onSectionRendered = ({
     rowOverscanStartIndex,
@@ -225,4 +231,34 @@ export default class Tree extends React.PureComponent<TreeProps> {
       });
     }
   };
+
+  private prepareRegistry(): number {
+    const {nodeGetter} = this.props;
+    const {map} = this.registry;
+
+    const g = nodeGetter();
+    const list = [];
+
+    let isPreviousOpened = false;
+
+    // tslint:disable-next-line:no-constant-condition
+    while (true) {
+      const {value, done}: {value: Node, done: boolean} = g.next(isPreviousOpened);
+
+      if (done) {
+        break;
+      }
+
+      if (!map[value.id]) {
+        map[value.id] = value;
+      }
+
+      list.push(value.id);
+      isPreviousOpened = map[value.id].isOpened;
+    }
+
+    this.registry.list = list;
+
+    return list.length;
+  }
 }

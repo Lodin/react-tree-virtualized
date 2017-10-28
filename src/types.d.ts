@@ -1,5 +1,5 @@
 import {CSSProperties, MouseEvent, ReactNode, SyntheticEvent} from 'react';
-import {Index, SectionRenderedParams} from 'react-virtualized';
+import {SectionRenderedParams} from 'react-virtualized';
 
 export interface CellPosition {
   columnIndex: number;
@@ -13,43 +13,43 @@ export interface RenderedSection extends SectionRenderedParams {
   rowOverscanStopIndex: number;
 }
 
-export interface PreviousNodeInfo {
+export interface Node {
+  childrenCount: number;
+  data: any;
+  deepLevel: number;
   id: string;
+  isLeaf: boolean;
   isOpened: boolean;
 }
 
-export interface NodeInfo extends Index {
-  previousNode?: PreviousNodeInfo;
+export interface NodeInfo {
+  childrenCount: number;
+  isOpened: boolean;
 }
 
-export interface NodeData {
-  data: any;
-  id: string;
-  isLeaf: boolean;
-  nestingLevel: number;
-}
+export type NodeGetter = () => IterableIterator<Node>;
 
-export type NodeGetter = (info: NodeInfo) => NodeData;
-
-export interface NodeMeta {
-  id: string;
-  isLeaf: boolean;
-  nestingLevel: number;
+export interface NodeRegistry {
+  list: string[];
+  map: {
+    [id: string]: Node;
+  };
 }
 
 export interface NodeMouseEventHandlerParams {
-  nodeMeta: NodeMeta;
   event: SyntheticEvent<MouseEvent<any>>;
+  nodeData: any;
 }
 
 export interface NodeProps {
   className: string;
+  deepLevel: number;
   index: number;
+  isLeaf: boolean;
   isOpened: boolean;
   isScrolling: boolean;
   key: string;
   nodeData: any;
-  nodeMeta: NodeMeta;
   style: CSSProperties;
 
   onNodeClick?(params: NodeMouseEventHandlerParams): void;

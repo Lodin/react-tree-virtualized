@@ -1,11 +1,17 @@
 import * as React from 'react';
 import {NodeProps} from './types';
 
+const leafStyle = {
+  marginLeft: 20,
+};
+
 export default function defaultNodeRenderer({
   className,
+  deepLevel,
+  isLeaf,
   isOpened,
+  key,
   nodeData,
-  nodeMeta,
   onNodeClick,
   onNodeDoubleClick,
   onNodeMouseOut,
@@ -31,7 +37,7 @@ export default function defaultNodeRenderer({
         (event: React.MouseEvent<any>) => {
           onNodeClick({
             event,
-            nodeMeta,
+            nodeData,
           });
         };
     }
@@ -41,7 +47,7 @@ export default function defaultNodeRenderer({
         (event: React.MouseEvent<any>) => {
           onNodeDoubleClick({
             event,
-            nodeMeta,
+            nodeData,
           });
         };
     }
@@ -51,7 +57,7 @@ export default function defaultNodeRenderer({
         (event: React.MouseEvent<any>) => {
           onNodeMouseOver({
             event,
-            nodeMeta,
+            nodeData,
           });
         };
     }
@@ -61,7 +67,7 @@ export default function defaultNodeRenderer({
         (event: React.MouseEvent<any>) => {
           onNodeMouseOut({
             event,
-            nodeMeta,
+            nodeData,
           });
         };
     }
@@ -71,29 +77,35 @@ export default function defaultNodeRenderer({
         (event: React.MouseEvent<any>) => {
           onNodeRightClick({
             event,
-            nodeMeta,
+            nodeData,
           });
         };
     }
   }
 
+  const s = {
+    ...style,
+    marginLeft: deepLevel * 10,
+  };
+
   return (
     <div
       {...a11yProps}
       className={className}
-      style={style}
+      key={key}
+      style={s}
     >
-      <span
-        role="button"
-        onClick={onNodeToggle}
-      >
-        [{
-        isOpened
-          ? '-'
-          : '+'
-      }]
-      </span>
-      <span>
+      {
+        !isLeaf && (
+          <span
+            role="button"
+            onClick={onNodeToggle}
+          >
+            {isOpened ? '[-]' : '[+]'}&nbsp;
+          </span>
+        )
+      }
+      <span style={isLeaf ? leafStyle : undefined}>
         {String(nodeData)}
       </span>
     </div>
