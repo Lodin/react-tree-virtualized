@@ -7,6 +7,8 @@ module.exports = {
   cache: resolve('./node_modules/.cache'),
   index: resolve('./src/index.ts'),
   modules: resolve('./node_modules'),
+  specs: resolve('./specs'),
   src: resolve('./src'),
+  stories: resolve('./stories'),
   tsconfig: resolve('./tsconfig.json'),
 };
