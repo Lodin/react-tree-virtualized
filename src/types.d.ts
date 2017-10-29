@@ -42,7 +42,7 @@ export interface NodeMouseEventHandlerParams {
 }
 
 export interface NodeProps {
-  className: string;
+  className?: string;
   deepLevel: number;
   index: number;
   isLeaf: boolean;

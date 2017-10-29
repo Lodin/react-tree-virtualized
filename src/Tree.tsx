@@ -6,7 +6,7 @@ import {GridCoreProps} from 'react-virtualized/dist/es/Grid';
 import defaultNodeRenderer from './defaultNodeRenderer';
 import {
   CellPosition,
-  Node, NodeGetter, NodeRegistry, NodeRenderer,
+  Node, NodeGetter, NodeMouseEventHandlerParams, NodeRegistry, NodeRenderer,
   RenderedSection,
 } from './types';
 
@@ -18,9 +18,15 @@ export interface RowsRenderInfo {
 }
 
 export interface TreeProps extends GridCoreProps {
+  nodeClassName?: string;
   nodeGetter: NodeGetter;
   nodeRenderer?: NodeRenderer;
 
+  onNodeClick?(params: NodeMouseEventHandlerParams): void ,
+  onNodeDoubleClick?(params: NodeMouseEventHandlerParams): void,
+  onNodeMouseOver?(params: NodeMouseEventHandlerParams): void,
+  onNodeMouseOut?(params: NodeMouseEventHandlerParams): void,
+  onNodeRightClick?(params: NodeMouseEventHandlerParams): void,
   onRowsRendered?(info: RowsRenderInfo): void;
 }
 
