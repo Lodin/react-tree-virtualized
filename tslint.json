@@ -1,7 +1,0 @@
-{
-  "extends": "tslint-config-poetez",
-  "rules": {
-    "no-non-null-assertion": false,
-    "semicolon": false
-  }
-}
